@@ -4,11 +4,24 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
 import javax.imageio.ImageIO;
+
+import org.apache.commons.imaging.ImagingException;
+import org.apache.commons.imaging.ImageWriteException;
+import org.apache.commons.imaging.Imaging;
+import org.apache.commons.imaging.formats.jpeg.exif.ExifRewriter;
+import org.apache.commons.imaging.formats.tiff.TiffImageMetadata;
+import org.apache.commons.imaging.formats.tiff.constants.ExifTagConstants;
+import org.apache.commons.imaging.formats.tiff.write.TiffOutputDirectory;
+import org.apache.commons.imaging.formats.tiff.write.TiffOutputSet;
 
 public class Funciones {
 	
@@ -73,6 +86,31 @@ public class Funciones {
         g2d.dispose();
         ImageIO.write(image, "PNG", new File(outputPath));
     }
+	
+	public static void updateExifMetadata(String imagePath, Date captureDate, 
+            double latitude, double longitude) throws ImagingException, IOException {
+
+		File imageFile = new File(imagePath);
+		TiffImageMetadata exifData = Imaging.getMetadata(imageFile).getExif();
+
+		TiffOutputSet outputSet = (exifData != null) ? exifData.getOutputSet() : new TiffOutputSet();
+
+
+		outputSet.getOrCreateExifDirectory().addField(ExifTagConstants.EXIF_TAG_DATE_TIME_ORIGINAL,new SimpleDateFormat("yyyy:MM:dd HH:mm:ss").format(captureDate));
+
+		// Actualizar GPS usando RationalNumber
+		TiffOutputDirectory gpsDir = outputSet.getOrCreateGPSDirectory();
+		gpsDir.addField(ExifTagConstants.GPS_TAG_GPS_LATITUDE_REF, 
+		latitude >= 0 ? "N" : "S");
+
+		RationalNumber[] latRational = RationalNumber.decimalToRational(latitude);
+		gpsDir.addField(ExifTagConstants.GPS_TAG_GPS_LATITUDE, latRational);
+
+		// Guardar cambios
+		try (FileOutputStream fos = new FileOutputStream(imageFile)) {
+			new ExifRewriter().updateExifMetadataLossless(imageFile, fos, outputSet);
+		}
+	}
 	
 	
 }
