@@ -6,6 +6,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -15,11 +16,13 @@ import java.util.Random;
 import javax.imageio.ImageIO;
 
 import org.apache.commons.imaging.ImagingException;
+import org.apache.commons.imaging.common.RationalNumber;
 import org.apache.commons.imaging.ImageWriteException;
 import org.apache.commons.imaging.Imaging;
 import org.apache.commons.imaging.formats.jpeg.exif.ExifRewriter;
 import org.apache.commons.imaging.formats.tiff.TiffImageMetadata;
 import org.apache.commons.imaging.formats.tiff.constants.ExifTagConstants;
+import org.apache.commons.imaging.formats.tiff.constants.GpsTagConstants;
 import org.apache.commons.imaging.formats.tiff.write.TiffOutputDirectory;
 import org.apache.commons.imaging.formats.tiff.write.TiffOutputSet;
 
@@ -87,30 +90,46 @@ public class Funciones {
         ImageIO.write(image, "PNG", new File(outputPath));
     }
 	
-	public static void updateExifMetadata(String imagePath, Date captureDate, 
-            double latitude, double longitude) throws ImagingException, IOException {
+	public static void updateExifMetadata(Path imagePath, Date captureDate, double latitude, double longitude)
+            throws ImagingException, IOException {
 
-		File imageFile = new File(imagePath);
-		TiffImageMetadata exifData = Imaging.getMetadata(imageFile).getExif();
+        File imageFile = imagePath.toFile();
 
-		TiffOutputSet outputSet = (exifData != null) ? exifData.getOutputSet() : new TiffOutputSet();
+        // Crear un nuevo conjunto de metadatos EXIF
+        TiffOutputSet outputSet = new TiffOutputSet();
 
+        // 1. Actualizar fecha de captura
+        TiffOutputDirectory exifDir = outputSet.getOrCreateExifDirectory();
+        exifDir.add(
+                GpsTagConstants.EXIF_TAG_DATE_TIME_ORIGINAL,
+                new SimpleDateFormat("yyyy:MM:dd HH:mm:ss").format(captureDate)
+        );
 
-		outputSet.getOrCreateExifDirectory().addField(ExifTagConstants.EXIF_TAG_DATE_TIME_ORIGINAL,new SimpleDateFormat("yyyy:MM:dd HH:mm:ss").format(captureDate));
+        // 2. Actualizar coordenadas GPS
+        double absLatitude = Math.abs(latitude);
+        int degrees = (int) absLatitude;
+        double remaining = absLatitude - degrees;
+        double minutes = remaining * 60;
+        int minutesInt = (int) minutes;
+        double seconds = (minutes - minutesInt) * 60;
 
-		// Actualizar GPS usando RationalNumber
-		TiffOutputDirectory gpsDir = outputSet.getOrCreateGPSDirectory();
-		gpsDir.addField(ExifTagConstants.GPS_TAG_GPS_LATITUDE_REF, 
-		latitude >= 0 ? "N" : "S");
+        // Crear RationalNumbers para grados, minutos y segundos
+        RationalNumber[] latRationals = new RationalNumber[] {
+                new RationalNumber(degrees, 1),
+                new RationalNumber(minutesInt, 1),
+                new RationalNumber((int) (seconds * 100), 100) // Precisión de 2 decimales
+        };
 
-		RationalNumber[] latRational = RationalNumber.decimalToRational(latitude);
-		gpsDir.addField(ExifTagConstants.GPS_TAG_GPS_LATITUDE, latRational);
+        gpsDir.add(
+                GpsTagConstants.GPS_TAG_GPS_LATITUDE,
+                latRationals
+        );
 
-		// Guardar cambios
-		try (FileOutputStream fos = new FileOutputStream(imageFile)) {
-			new ExifRewriter().updateExifMetadataLossless(imageFile, fos, outputSet);
-		}
-	}
+        // 3. Guardar cambios
+        try (FileOutputStream fos = new FileOutputStream(imageFile)) {
+            new ExifRewriter().updateExifMetadataLossy(imageFile, fos, outputSet);
+        }
+    }
 	
 	
 }
