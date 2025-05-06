@@ -17,7 +17,6 @@ import javax.imageio.ImageIO;
 
 import org.apache.commons.imaging.ImagingException;
 import org.apache.commons.imaging.common.RationalNumber;
-import org.apache.commons.imaging.ImageWriteException;
 import org.apache.commons.imaging.Imaging;
 import org.apache.commons.imaging.formats.jpeg.exif.ExifRewriter;
 import org.apache.commons.imaging.formats.tiff.TiffImageMetadata;
@@ -94,18 +93,23 @@ public class Funciones {
             throws ImagingException, IOException {
 
         File imageFile = imagePath.toFile();
-
-        // Crear un nuevo conjunto de metadatos EXIF
         TiffOutputSet outputSet = new TiffOutputSet();
 
-        // 1. Actualizar fecha de captura
+        // 1. Actualizar fecha de captura (EXIF general, no GPS)
         TiffOutputDirectory exifDir = outputSet.getOrCreateExifDirectory();
         exifDir.add(
-                GpsTagConstants.EXIF_TAG_DATE_TIME_ORIGINAL,
+                ExifTagConstants.EXIF_TAG_DATE_TIME_ORIGINAL, // Constante correcta
                 new SimpleDateFormat("yyyy:MM:dd HH:mm:ss").format(captureDate)
         );
 
         // 2. Actualizar coordenadas GPS
+        TiffOutputDirectory gpsDir = outputSet.getOrCreateGpsDirectory();
+        gpsDir.add(
+                GpsTagConstants.GPS_TAG_GPS_LATITUDE_REF,
+                latitude >= 0 ? "N" : "S"
+        );
+
+        // Conversión manual a RationalNumber[]
         double absLatitude = Math.abs(latitude);
         int degrees = (int) absLatitude;
         double remaining = absLatitude - degrees;
@@ -113,11 +117,10 @@ public class Funciones {
         int minutesInt = (int) minutes;
         double seconds = (minutes - minutesInt) * 60;
 
-        // Crear RationalNumbers para grados, minutos y segundos
-        RationalNumber[] latRationals = new RationalNumber[] {
+        RationalNumber[] latRationals = new RationalNumber[]{
                 new RationalNumber(degrees, 1),
                 new RationalNumber(minutesInt, 1),
-                new RationalNumber((int) (seconds * 100), 100) // Precisión de 2 decimales
+                new RationalNumber((int) (seconds * 100), 100)
         };
 
         gpsDir.add(
