@@ -6,7 +6,10 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -28,11 +31,12 @@ import org.apache.commons.imaging.formats.tiff.write.TiffOutputSet;
 public class Funciones {
 	
 	public static void generateDefaultFolders() {
+		                    //default folder where program is running
         String basePath = System.getProperty("user.dir") + "/biblioteca_imagenes";
         new File(basePath).mkdirs(); // Crear carpeta si no existe
         
         Random random = new Random();
-        generateFolders(basePath, 3, 2, Arrays.asList("fotos", "viajes", "personal"), random);
+        generateFolders(basePath, 3, 3, Arrays.asList("fotos", "viajes", "personal", "familia", "mascota", "montaña", "zaragoza", "valencia", "juan"), random);
     }
 
     private static void generateFolders(String currentPath, int maxFoldersPerLevel, int maxDepth,List<String> folderNames, Random random) {
@@ -45,6 +49,14 @@ public class Funciones {
             String folderName = folderNames.get(random.nextInt(folderNames.size()));
             File newFolder = new File(currentPath, folderName);
             newFolder.mkdirs();
+            System.out.println("Carpeta creada: " + newFolder.getAbsolutePath());
+            try {
+				createImages(newFolder.getAbsolutePath() + "/" + newFolder.getName() + (i + 1) + ".jpg", 800, 600);
+				System.out.println("Imagen creada en: " + newFolder.getAbsolutePath() + (i + 1) + ".jpg");
+			} catch (Exception e) {
+				e.printStackTrace();
+				System.out.println("Error al crear imagen en la carpeta: " + newFolder.getAbsolutePath());
+			}
             
             // Llamada recursiva con depth - 1
             generateFolders(newFolder.getAbsolutePath(), maxFoldersPerLevel, maxDepth - 1,
@@ -84,16 +96,16 @@ public class Funciones {
                 case 2 -> g2d.drawLine(random.nextInt(width), random.nextInt(height), random.nextInt(width), random.nextInt(height)); // Línea
             }
         }
-
+        
         g2d.dispose();
-        ImageIO.write(image, "PNG", new File(outputPath));
+        ImageIO.write(image, "JPG", new File(outputPath));
     }
 	
 	public static void updateExifMetadata(Path imagePath, Date captureDate, double latitude, double longitude)
             throws ImagingException, IOException {
 
         File imageFile = imagePath.toFile();
-        TiffOutputSet outputSet = new TiffOutputSet();
+        TiffOutputSet outputSet = new TiffOutputSet(); //almacena los cambios de EXIF que mas tarde se guardarán en el archivo
 
         // 1. Actualizar fecha de captura (EXIF general, no GPS)
         TiffOutputDirectory exifDir = outputSet.getOrCreateExifDirectory();
@@ -109,7 +121,7 @@ public class Funciones {
                 latitude >= 0 ? "N" : "S"
         );
 
-        // Conversión manual a RationalNumber[]
+        // Conversión a RationalNumber[]
         double absLatitude = Math.abs(latitude);
         int degrees = (int) absLatitude;
         double remaining = absLatitude - degrees;
