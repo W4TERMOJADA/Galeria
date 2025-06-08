@@ -38,7 +38,7 @@ public class Funciones {
         System.out.println();
         Random random = new Random();
         generateFolders(basePath, 3, 3, Arrays.asList("fotos", "viajes", "personal", "familia", "mascota", "montaña", "zaragoza", "valencia", "juan"), random);
-    }
+    } //probando modificar el codigo loooooooool
 
     private static void generateFolders(String currentPath, int maxFoldersPerLevel, int maxDepth,List<String> folderNames, Random random) {
         if (maxDepth <= 0) return;
