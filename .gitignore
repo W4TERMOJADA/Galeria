@@ -19,3 +19,6 @@ build/
 .idea/
 *.iml
 .vscode/
+
+#maven
+tarjet/
