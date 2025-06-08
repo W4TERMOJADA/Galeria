@@ -7,6 +7,9 @@
 .DS_Store
 Thumbs.db
 
+#Archivos generados por el proyecto
+biblioteca_imagenes/
+
 # Salidas de compilación
 bin/
 build/

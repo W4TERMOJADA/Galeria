@@ -38,7 +38,7 @@ public class Funciones {
         System.out.println();
         Random random = new Random();
         generateFolders(basePath, 3, 3, Arrays.asList("fotos", "viajes", "personal", "familia", "mascota", "montaña", "zaragoza", "valencia", "juan"), random);
-    } //probando modificar el codigo ahora desde el mac
+    } 
 
     private static void generateFolders(String currentPath, int maxFoldersPerLevel, int maxDepth,List<String> folderNames, Random random) {
         if (maxDepth <= 0) return;
@@ -108,7 +108,7 @@ public class Funciones {
         File imageFile = imagePath.toFile();
         TiffOutputSet outputSet = new TiffOutputSet(); //almacena los cambios de EXIF que mas tarde se guardarán en el archivo
 
-        // 1. Actualizar fecha de captura (EXIF general, no GPS)
+        // 1. Actualizar fecha de captura (EXIF general)
         TiffOutputDirectory exifDir = outputSet.getOrCreateExifDirectory();
         exifDir.add(
                 ExifTagConstants.EXIF_TAG_DATE_TIME_ORIGINAL, // Constante correcta
