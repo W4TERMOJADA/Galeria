@@ -1,0 +1,21 @@
+# Archivos específicos de Eclipse
+.classpath
+.project
+.settings/
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Salidas de compilación
+bin/
+build/
+
+# Archivos temporales
+*.log
+*.tmp
+
+# Otros IDEs (por si acaso)
+.idea/
+*.iml
+.vscode/
