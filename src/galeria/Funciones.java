@@ -40,7 +40,7 @@ public class Funciones {
         generateFolders(basePath, 3, 3, Arrays.asList("fotos", "viajes", "personal", "familia", "mascota", "montaña", "zaragoza", "valencia", "juan"), random);
     } 
 
-    private static void generateFolders(String currentPath, int maxFoldersPerLevel, int maxDepth,List<String> folderNames, Random random) {
+    private static void generateFolders(String currentPath, int maxFoldersPerLevel, int maxDepth, List<String> folderNames, Random random) {
         if (maxDepth <= 0) return;
 
         // Número aleatorio DIFERENTE para cada carpeta (entre 1 y maxFoldersPerLevel)
@@ -52,11 +52,11 @@ public class Funciones {
             newFolder.mkdirs();
             System.out.println("Carpeta creada: " + newFolder.getAbsolutePath());
             try {
+            	//Meter un for con random para que no sea fijo el número de imágenes generadas 
 				createImages(newFolder.getAbsolutePath() + "/" + newFolder.getName() + (i + 1) + ".jpg", 800, 600);
 				System.out.println("Imagen creada en: " + newFolder.getAbsolutePath() + (i + 1) + ".jpg");
 			} catch (Exception e) {
 				e.printStackTrace();
-				System.out.println("Error al crear imagen en la carpeta: " + newFolder.getAbsolutePath());
 			}
             
             // Llamada recursiva con depth - 1
