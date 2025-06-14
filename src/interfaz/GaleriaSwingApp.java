@@ -1,6 +1,6 @@
 package interfaz;
 
-
+import galeria.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;

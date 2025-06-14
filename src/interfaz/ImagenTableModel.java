@@ -1,5 +1,6 @@
 package interfaz;
 
+import galeria.*;
 import javax.swing.table.AbstractTableModel;
 import java.util.List;
 import java.util.ArrayList;
